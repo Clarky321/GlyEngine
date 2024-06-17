@@ -34,13 +34,23 @@ add_subdirectory(../external/imgui_raylib ${CMAKE_CURRENT_BINARY_DIR}/imgui_rayl
 
 add_subdirectory(../external/tinyfiledialogs ${CMAKE_CURRENT_BINARY_DIR}/tinyfiledialogs)
 
+add_subdirectory(../external/PerlinNoise ${CMAKE_CURRENT_BINARY_DIR}/PerlinNoise)
+
 # Set up engine sources
 set(ENGINE_PUBLIC_INCLUDES
-	includes/GlyEngineCore/test.h
+	includes/GlyEngineCore/chunk.h
+	includes/GlyEngineCore/tile.h
+	includes/GlyEngineCore/terrain.h
+	
+	includes/GlyEngineCore/player.h
 )
 
 set(ENGINE_PRIVATE_SOURCES
-	src/GlyEngineCore/test.cpp
+	src/GlyEngineCore/chunk.cpp
+	src/GlyEngineCore/tile.cpp
+	src/GlyEngineCore/terrain.cpp
+	
+	src/GlyEngineCore/player.cpp
 )
 
 set(ENGINE_ALL_SOURCE
@@ -56,4 +66,4 @@ target_include_directories(${ENGINE_PROJECT_NAME} PUBLIC includes ${raylib_SOURC
 
 target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_17)
 
-target_link_libraries(${ENGINE_PROJECT_NAME} raylib ImGui imgui_raylib tinyfiledialogs)
+target_link_libraries(${ENGINE_PROJECT_NAME} raylib ImGui imgui_raylib tinyfiledialogs PerlinNoise)

@@ -1,52 +1,68 @@
 #include <raylib.h>
-#include <raymath.h>
-#include <imgui.h>
+#include <GlyEngineCore\terrain.h>
+#include <GlyEngineCore\chunk.h>
+#include <GlyEngineCore\tile.h>
 
-#include <backends/imgui_impl_opengl3.h>
-#include <imgui_impl_raylib.h>
-#include <tinyfiledialogs.h>
+const int TILE_SIZE = 32;
 
-const int screenWidth = 1200;
-const int screenHeight = 800;
-
-int main()
+void UpdateDrawFrame(Camera2D& camera)
 {
-    InitWindow(screenWidth, screenHeight, "2D Top-Down Engine");
-    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    UpdateChunks(camera);
 
-    SetTargetFPS(60);
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    BeginMode2D(camera);
 
-    ImGui::StyleColorsDark();
+    for (const auto& chunkPair : chunks) {
+        const Chunk& chunk = chunkPair.second;
 
-    ImGui_ImplRaylib_Init();
-    ImGui_ImplOpenGL3_Init();
+        for (int y = 0; y < CHUNK_SIZE; y++)
+        {
+            for (int x = 0; x < CHUNK_SIZE; x++)
+            {
+                Vector2 position = { chunk.position.x * CHUNK_SIZE + x, chunk.position.y * CHUNK_SIZE + y };
+                Tile tile = chunk.tiles[y][x];
 
-    while (!WindowShouldClose())
-    {
-        ImGui_ImplRaylib_NewFrame();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui::NewFrame();
+                Color color;
+                switch (tile.type)
+                {
+                case GRASS: color = GREEN; break;
+                case WATER: color = DARKGREEN; break;
+                case TREE: color = DARKGRAY; break;
+                }
 
-        ImGui::ShowDemoWindow();
-
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        EndDrawing();
+                DrawRectangle(position.x * TILE_SIZE, position.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+            }
+        }
     }
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplRaylib_Shutdown();
-    ImGui::DestroyContext();
+    EndMode2D();
+
+    EndDrawing();
+}
+
+int main(void) {
+    // Инициализация окна
+    InitWindow(800, 600, "Procedural Terrain Generation");
+    SetTargetFPS(60);
+
+    Camera2D camera = { 0 };
+    camera.target = Vector2 { 0.0f, 0.0f };
+    camera.offset = Vector2 { 400.0f, 300.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
+
+    while (!WindowShouldClose()) {
+        // Обновление камеры
+        if (IsKeyDown(KEY_RIGHT)) camera.target.x += 10;
+        if (IsKeyDown(KEY_LEFT)) camera.target.x -= 10;
+        if (IsKeyDown(KEY_UP)) camera.target.y -= 10;
+        if (IsKeyDown(KEY_DOWN)) camera.target.y += 10;
+
+        UpdateDrawFrame(camera);
+    }
 
     CloseWindow();
-
     return 0;
 }
